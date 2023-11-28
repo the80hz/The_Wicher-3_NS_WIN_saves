@@ -24,20 +24,22 @@ def run_offzip(source_file_path, destination_path):
             print(f"Expected intermediate file not found: {intermediate_file_name}")
             return
 
-        # Copy the PNG file with the same name as the source file to the destination directory
-        source_png_file_path = os.path.splitext(source_file_path)[0] + '.png'
-        destination_png_file_path = os.path.join(destination_path, os.path.basename(source_png_file_path))
-        if os.path.isfile(source_png_file_path):
-            shutil.copy2(source_png_file_path, destination_png_file_path)
-            print(f"Copied PNG file to {destination_png_file_path}")
-        else:
-            print(f"No PNG file found to copy: {source_png_file_path}")
-
-        # Rename the intermediate file to match the source file name and move it to the destination
-        final_file_name = os.path.basename(source_file_path)
+        # Rename the intermediate file to match the new naming convention and move it to the destination
+        base_name, extension = os.path.splitext(os.path.basename(source_file_path))
+        final_file_name = base_name.replace('Manual.', 'ManualSave_').replace('.', '_') + extension
         final_file_path = os.path.join(destination_path, final_file_name)
         shutil.move(intermediate_file_path, final_file_path)
-        print(f"Files has been renamed and moved to {final_file_path}")
+        print(f"File has been renamed and moved to {final_file_path}")
+
+        # Copy and rename the PNG file with the same base name as the source file to the destination directory
+        source_png_file_path = os.path.splitext(source_file_path)[0] + '.png'
+        destination_png_file_name = base_name.replace('Manual.', 'ManualSave_').replace('.', '_') + '.png'
+        destination_png_file_path = os.path.join(destination_path, destination_png_file_name)
+        if os.path.isfile(source_png_file_path):
+            shutil.copy2(source_png_file_path, destination_png_file_path)
+            print(f"Copied and renamed PNG file to {destination_png_file_path}")
+        else:
+            print(f"No PNG file found to copy: {source_png_file_path}")
 
 
 def process_ns_format(source_file_path, destination_path):
