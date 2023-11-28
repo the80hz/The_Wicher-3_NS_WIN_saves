@@ -5,7 +5,14 @@ import os
 import shutil
 
 
-def run_offzip(source_file_path, destination_path):
+def run_offzip(source_file_path, destination_path, use_docs_folder):
+    # Determine the final destination path based on the use_docs_folder flag
+    if use_docs_folder:
+        user_documents_path = os.path.join(os.path.expanduser("~"), "Documents")
+        final_destination_path = os.path.join(user_documents_path, "The Witcher 3", "gamesaves")
+    else:
+        final_destination_path = destination_path
+
     # Create a temporary directory to store the intermediate file
     with tempfile.TemporaryDirectory() as temp_dir:
         intermediate_file_name = "0000000c.snf"
@@ -27,14 +34,14 @@ def run_offzip(source_file_path, destination_path):
         # Rename the intermediate file to match the new naming convention and move it to the destination
         base_name, extension = os.path.splitext(os.path.basename(source_file_path))
         final_file_name = base_name.replace('Manual.', 'ManualSave_').replace('.', '_') + extension
-        final_file_path = os.path.join(destination_path, final_file_name)
+        final_file_path = os.path.join(final_destination_path, final_file_name)
         shutil.move(intermediate_file_path, final_file_path)
         print(f"File has been renamed and moved to {final_file_path}")
 
         # Copy and rename the PNG file with the same base name as the source file to the destination directory
         source_png_file_path = os.path.splitext(source_file_path)[0] + '.png'
         destination_png_file_name = base_name.replace('Manual.', 'ManualSave_').replace('.', '_') + '.png'
-        destination_png_file_path = os.path.join(destination_path, destination_png_file_name)
+        destination_png_file_path = os.path.join(final_destination_path, destination_png_file_name)
         if os.path.isfile(source_png_file_path):
             shutil.copy2(source_png_file_path, destination_png_file_path)
             print(f"Copied and renamed PNG file to {destination_png_file_path}")
@@ -42,27 +49,45 @@ def run_offzip(source_file_path, destination_path):
             print(f"No PNG file found to copy: {source_png_file_path}")
 
 
-def process_ns_format(source_file_path, destination_path):
-    run_offzip(source_file_path, destination_path)
+def process_format(format_param, source_file_path, destination_path, use_docs_folder):
+    if format_param == '-ns':
+        run_offzip(source_file_path, destination_path, use_docs_folder)
+    elif format_param == '-win':
+        # Placeholder for Windows format processing
+        print("The 'win' format processing is not implemented yet.")
 
 
-def process_win_format(source_file_path, destination_path):
-    print("The 'win' format processing is not implemented yet.")
-    # The same copying mechanism for the PNG file can be implemented here when 'win' processing is added.
+def parse_arguments(args):
+    format_param = ''
+    source_file_path = ''
+    destination_path = ''
+    use_docs_folder = False
 
-
-# Example usage: python script.py ns path_to_source_file path_to_destination_folder
-if __name__ == '__main__':
-    if len(sys.argv) == 4:
-        format_param = sys.argv[1].lower()
-        source_file_path = sys.argv[2]
-        destination_path = sys.argv[3]
-
-        if format_param == '-ns':
-            process_ns_format(source_file_path, destination_path)
-        elif format_param == '-win':
-            process_win_format(source_file_path, destination_path)
+    # Parsing arguments
+    for i, arg in enumerate(args):
+        if arg.lower() in ['-ns', '-win']:
+            format_param = arg.lower()
+        elif arg == '-docs':
+            use_docs_folder = True
         else:
-            print("Invalid format parameter. Use '-ns' for NS format or '-win' for Windows format.")
+            # Assuming that non-flag arguments are file paths
+            if not source_file_path:
+                source_file_path = arg
+            elif not destination_path:
+                destination_path = arg
+
+    return format_param, source_file_path, destination_path, use_docs_folder
+
+
+if __name__ == '__main__':
+    format_param, source_file_path, destination_path, use_docs_folder = parse_arguments(sys.argv[1:])
+
+    # If -docs is used, destination_path is not required from command line
+    if use_docs_folder:
+        user_documents_path = os.path.join(os.path.expanduser("~"), "Documents")
+        destination_path = os.path.join(user_documents_path, "The Witcher 3", "gamesaves")
+
+    if format_param in ['-ns', '-win']:
+        process_format(format_param, source_file_path, destination_path, use_docs_folder)
     else:
-        print("Usage: script.py [-ns|-win] [source file path] [destination path]")
+        print("Usage: script.py [-ns|-win] [source file path] [optional: destination path] [-docs]")
