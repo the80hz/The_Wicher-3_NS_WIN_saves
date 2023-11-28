@@ -56,11 +56,11 @@ if __name__ == '__main__':
         source_file_path = sys.argv[2]
         destination_path = sys.argv[3]
 
-        if format_param == 'ns':
+        if format_param == '-ns':
             process_ns_format(source_file_path, destination_path)
-        elif format_param == 'win':
+        elif format_param == '-win':
             process_win_format(source_file_path, destination_path)
         else:
-            print("Invalid format parameter. Use 'ns' for NS format or 'win' for Windows format.")
+            print("Invalid format parameter. Use '-ns' for NS format or '-win' for Windows format.")
     else:
-        print("Usage: script.py [ns|win] [source file path] [destination path]")
+        print("Usage: script.py [-ns|-win] [source file path] [destination path]")
