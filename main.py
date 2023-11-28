@@ -34,9 +34,19 @@ def run_offzip(source_file_path, destination_path):
 def process_ns_format(source_file_path, destination_path):
     run_offzip(source_file_path, destination_path)
 
+    # Copy the PNG file with the same name as the source file to the destination directory
+    source_png_file_path = os.path.splitext(source_file_path)[0] + '.png'
+    destination_png_file_path = os.path.join(destination_path, os.path.basename(source_png_file_path))
+    if os.path.isfile(source_png_file_path):
+        shutil.copy2(source_png_file_path, destination_png_file_path)
+        print(f"Copied PNG file to {destination_png_file_path}")
+    else:
+        print(f"No PNG file found to copy: {source_png_file_path}")
+
 
 def process_win_format(source_file_path, destination_path):
     print("The 'win' format processing is not implemented yet.")
+    # The same copying mechanism for the PNG file can be implemented here when 'win' processing is added.
 
 
 # Example usage: python script.py ns path_to_source_file path_to_destination_folder
